@@ -1,27 +1,36 @@
 package graph
 
-type Vertex struct {
-	Name                  string
-	AssociatedVertexCount int
-	AssociatedVertexes    []string
+type Node struct {
+	Name                 string
+	AssociatedNodesCount int
+	AssociatedNodes      []string
 }
 
-type Graph []Vertex
+type Graph struct {
+	Nodes []Node
+}
 
-func (graph Graph) Concat(newGraph Graph) Graph{
-	for _, vertex := range newGraph {
-		graph = graph.AddVertex(vertex)
+func NewGraph() *Graph {
+	return &Graph{
+		Nodes: []Node{},
+	}
+}
+
+func (graph *Graph) Concat(newGraph Graph) *Graph{
+	for _, node := range newGraph.Nodes {
+		graph.AddNode(node)
 	}
 	return graph
 }
 
-func (graph Graph) AddVertex(vertex Vertex) Graph {
-	return append(graph, vertex)
+func (graph *Graph) AddNode(node Node) *Graph {
+	graph.Nodes = append(graph.Nodes, node)
+	return graph
 }
 
-func (graph Graph) ContainsVertex(name string) bool {
-	for _, vertex := range graph {
-		if vertex.Name == name {
+func (graph *Graph) ContainsVertex(name string) bool {
+	for _, node := range graph.Nodes {
+		if node.Name == name {
 			return true
 		}
 	}
@@ -29,29 +38,29 @@ func (graph Graph) ContainsVertex(name string) bool {
 	return false
 }
 
-func (graph Graph) AddAssociatedVertexesTo(name string, associatedVertexes []string) Graph {
-	for _, associatedVertex := range associatedVertexes {
-		graph = graph.AddAssociatedVertexTo(name, associatedVertex)
+func (graph *Graph) AddAssociatedNodesTo(name string, associatedNodes []string) *Graph {
+	for _, associatedNode := range associatedNodes {
+		graph.AddAssociatedNodeTo(name, associatedNode)
 	}
 	return graph
 }
 
-func (graph Graph) AddAssociatedVertexTo(name string, associatedVertexName string) Graph {
-	for i, vertex := range graph {
-		if vertex.Name == name {
-			graph[i].AssociatedVertexCount++
-			graph[i].AssociatedVertexes = append(graph[i].AssociatedVertexes, associatedVertexName)
+func (graph *Graph) AddAssociatedNodeTo(name string, associatedNodeName string) *Graph {
+	for i, node := range graph.Nodes {
+		if node.Name == name {
+			graph.Nodes[i].AssociatedNodesCount++
+			graph.Nodes[i].AssociatedNodes = append(graph.Nodes[i].AssociatedNodes, associatedNodeName)
 			return graph
 		}
 	}
 
-	return graph.AddVertex(Vertex{
-		Name: name,
-		AssociatedVertexCount: 1,
-		AssociatedVertexes:    []string{associatedVertexName},
+	return graph.AddNode(Node{
+		Name:                 name,
+		AssociatedNodesCount: 1,
+		AssociatedNodes:      []string{associatedNodeName},
 	})
 }
 
-func (graph Graph) GetVertexNumber() int {
-	return len(graph)
+func (graph *Graph) GetNodeCount() int {
+	return len(graph.Nodes)
 }

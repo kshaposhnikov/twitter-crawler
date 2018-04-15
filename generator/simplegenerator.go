@@ -21,26 +21,26 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 	}
 
 	var previousGraph = gen.buildInitialGraph(n * m)
-	return gen.buildFinalGraph(previousGraph, m)
+	return gen.buildFinalGraph(&previousGraph, m)
 }
 
 func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
-	var previousGraph graph.Graph
-	previousGraph = previousGraph.AddVertex(graph.Vertex{
-		Name: "1",
-		AssociatedVertexCount: 1,
-		AssociatedVertexes:    []string{"1"},
+	previousGraph := graph.NewGraph()
+	previousGraph.AddNode(graph.Node{
+		Name:                 "1",
+		AssociatedNodesCount: 1,
+		AssociatedNodes:      []string{"1"},
 	})
 
 	for i := 1; i <= n - 1; i++ {
 		previousGraph = nextGraph(previousGraph)
 	}
 
-	log.Println("===> Step 1: Result: \n", previousGraph)
-	return previousGraph
+	log.Println("===> Step 1: Result: \n", *previousGraph)
+	return *previousGraph
 }
 
-func nextGraph(previousGraph graph.Graph) graph.Graph {
+func nextGraph(previousGraph *graph.Graph) *graph.Graph {
 	//random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	degrees := analyzer.CalculateProwerByArray(previousGraph)
@@ -52,49 +52,49 @@ func nextGraph(previousGraph graph.Graph) graph.Graph {
 		return cdf[i] > x
 	})
 
-	var vertex graph.Vertex
-	if idx > previousGraph.GetVertexNumber() {
-		vertex = graph.Vertex{
-			Name: strconv.Itoa(len(probabilities)),
-			AssociatedVertexCount: 1,
-			AssociatedVertexes:    []string{strconv.Itoa(len(probabilities))},
+	var node graph.Node
+	if idx > previousGraph.GetNodeCount() {
+		node = graph.Node{
+			Name:                 strconv.Itoa(len(probabilities)),
+			AssociatedNodesCount: 1,
+			AssociatedNodes:      []string{strconv.Itoa(len(probabilities))},
 		}
 	} else {
-		vertex = graph.Vertex{
-			Name: strconv.Itoa(len(probabilities)),
-			AssociatedVertexCount: 1,
-			AssociatedVertexes:    []string{strconv.Itoa(idx + 1)},
+		node = graph.Node{
+			Name:                 strconv.Itoa(len(probabilities)),
+			AssociatedNodesCount: 1,
+			AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
 		}
 	}
 
-	return append(previousGraph, vertex)
+	return previousGraph.AddNode(node)
 }
 
-func (gen GeneralGenerator) buildFinalGraph(pregeneratedGrap graph.Graph, m int) graph.Graph {
-	var result graph.Graph
+func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, m int) graph.Graph {
+	result := graph.NewGraph()
 
 	j := 1
 	right := m
 	left := 1
 	loops := []string{}
-	for i, vertex := range pregeneratedGrap {
-		for _, associatedVertex := range vertex.AssociatedVertexes {
+	for i, node := range pregeneratedGraph.Nodes {
+		for _, associatedVertex := range node.AssociatedNodes {
 			current, _ := strconv.Atoi(associatedVertex)
 			if current < right && current > left {
 				loops = append(loops, strconv.Itoa(j))
 			} else if current >= right || current <= left {
-				result = result.AddAssociatedVertexTo(strconv.Itoa(j), strconv.Itoa(calculateInterval(current, m)))
+				result = result.AddAssociatedNodeTo(strconv.Itoa(j), strconv.Itoa(calculateInterval(current, m)))
 			}
 		}
 
 		if i == right-1 {
 			if len(loops) > 0 {
-				result = result.AddAssociatedVertexesTo(strconv.Itoa(j), loops)
+				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
 			} else if !result.ContainsVertex(strconv.Itoa(j)) {
-				result = result.AddVertex(graph.Vertex{
-					Name: strconv.Itoa(j),
-					AssociatedVertexCount: len(loops),
-					AssociatedVertexes:    loops,
+				result = result.AddNode(graph.Node{
+					Name:                 strconv.Itoa(j),
+					AssociatedNodesCount: len(loops),
+					AssociatedNodes:      loops,
 				})
 			}
 			loops = []string{}
@@ -104,8 +104,8 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGrap graph.Graph, m int)
 		}
 	}
 
-	log.Println("===> Step 2: Result: \n", result)
-	return result
+	log.Println("===> Step 2: Result: \n", *result)
+	return *result
 }
 
 func calculateInterval(number int, m int) int {

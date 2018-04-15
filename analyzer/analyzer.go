@@ -8,10 +8,10 @@ import (
 
 func CalcluatePowerByIter(iterator *mgo.Iter, context *AnalyzerContext) {
 	powerVertex := make(map[string]int)
-	var vertex graph.Vertex
+	var vertex graph.Node
 	for iterator.Next(&vertex) {
-		powerVertex[vertex.Name] += vertex.AssociatedVertexCount
-		for _, vertex := range vertex.AssociatedVertexes {
+		powerVertex[vertex.Name] += vertex.AssociatedNodesCount
+		for _, vertex := range vertex.AssociatedNodes {
 			powerVertex[vertex]++
 		}
 	}
@@ -19,11 +19,11 @@ func CalcluatePowerByIter(iterator *mgo.Iter, context *AnalyzerContext) {
 	iterator.Close()
 }
 
-func CalculateProwerByArray(graph graph.Graph) map[string]int{
+func CalculateProwerByArray(graph *graph.Graph) map[string]int{
 	powerVertex := make(map[string]int)
-	for _, item := range graph {
-		powerVertex[item.Name] += item.AssociatedVertexCount
-		for _, vertex := range item.AssociatedVertexes {
+	for _, item := range graph.Nodes {
+		powerVertex[item.Name] += item.AssociatedNodesCount
+		for _, vertex := range item.AssociatedNodes {
 			powerVertex[vertex]++
 		}
 	}

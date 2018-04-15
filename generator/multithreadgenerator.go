@@ -18,19 +18,19 @@ func (gen MultithreadGenerator) Generate() graph.Graph {
 		go buildInitialGraph(n, graphs)
 	}
 
-	var intermidiateGraph graph.Graph
+	intermidiateGraph := graph.NewGraph()
 	for i := 0; i < gen.NumberThreads; i++ {
 		intermidiateGraph = intermidiateGraph.Concat(<- graphs)
 	}
 
-	log.Println(intermidiateGraph)
+	log.Println(*intermidiateGraph)
 
 	j := n
-	for i := n; i < len(intermidiateGraph); i++ {
-		intermidiateGraph[i].Name = updateVertex(intermidiateGraph[i].Name, j)
+	for i := n; i < intermidiateGraph.GetNodeCount(); i++ {
+		intermidiateGraph.Nodes[i].Name = updateVertex(intermidiateGraph.Nodes[i].Name, j)
 
-		for l := 0; l < len(intermidiateGraph[i].AssociatedVertexes); l++ {
-			intermidiateGraph[i].AssociatedVertexes[l] = updateVertex(intermidiateGraph[i].AssociatedVertexes[l], j)
+		for l := 0; l < len(intermidiateGraph.Nodes[i].AssociatedNodes); l++ {
+			intermidiateGraph.Nodes[i].AssociatedNodes[l] = updateVertex(intermidiateGraph.Nodes[i].AssociatedNodes[l], j)
 		}
 
 		if i == j * 2 - 1 {
@@ -55,7 +55,7 @@ func buildInitialGraph(n int, graphs chan graph.Graph) {
 	graphs <- simpleGenerator.buildInitialGraph(n)
 }
 
-func buildFinalGraph(initialGraph graph.Graph, m int) graph.Graph {
+func buildFinalGraph(initialGraph *graph.Graph, m int) graph.Graph {
 	simpleGenerator := GeneralGenerator{}
 	return simpleGenerator.buildFinalGraph(initialGraph, m)
 }

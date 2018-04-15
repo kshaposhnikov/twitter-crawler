@@ -58,6 +58,11 @@ func main() {
 				},
 				NumberThreads: 3,
 			}.Generate()
+
+			//generator.GeneralGenerator{
+			//	VCount: n,
+			//	ECount: m,
+			//}.Generate()
 		} else {
 			log.Fatalln("Need to specify format `n;m`")
 		}
@@ -85,10 +90,10 @@ func fillUsers(db *mgo.Database, path string) []user.User {
 func buildGraph(db *mgo.Database, users []user.User) {
 	for _, user := range users {
 		value, _ := strconv.Atoi(user.FriendsCount)
-		graph.StoreVertex(db, graph.Vertex{
-			Name: user.ID,
-			AssociatedVertexCount: value,
-			AssociatedVertexes:    user.Friends,
+		graph.StoreVertex(db, graph.Node{
+			Name:                 user.ID,
+			AssociatedNodesCount: value,
+			AssociatedNodes:      user.Friends,
 		})
 	}
 }
