@@ -51,18 +51,18 @@ func main() {
 			n, _ := strconv.Atoi(nm[0])
 			m, _ := strconv.Atoi(nm[1])
 
-			generator.MultithreadGenerator{
-					GeneralGenerator: generator.GeneralGenerator{
+			generator.SecondPhaseMultithreadGenerator{
+				GeneralGenerator: generator.GeneralGenerator{
 					VCount: n,
 					ECount: m,
 				},
 				NumberThreads: 3,
 			}.Generate()
 
-			//generator.GeneralGenerator{
-			//	VCount: n,
-			//	ECount: m,
-			//}.Generate()
+			// generator.GeneralGenerator{
+			// 	VCount: n,
+			// 	ECount: m,
+			// }.Generate()
 		} else {
 			log.Fatalln("Need to specify format `n;m`")
 		}

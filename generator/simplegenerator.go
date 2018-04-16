@@ -2,13 +2,13 @@ package generator
 
 import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 import (
+	"github.com/kshaposhnikov/twitter-crawler/analyzer"
+	"gonum.org/v1/gonum/floats"
 	"log"
 	"math"
 	"math/rand"
 	"sort"
 	"strconv"
-	"github.com/kshaposhnikov/twitter-crawler/analyzer"
-	"gonum.org/v1/gonum/floats"
 )
 
 //bollobas-riordan
@@ -21,7 +21,7 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 	}
 
 	var previousGraph = gen.buildInitialGraph(n * m)
-	return gen.buildFinalGraph(&previousGraph, m)
+	return gen.buildFinalGraph(&previousGraph, 0, previousGraph.GetNodeCount(), 1, m)
 }
 
 func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
@@ -32,7 +32,7 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 		AssociatedNodes:      []string{"1"},
 	})
 
-	for i := 1; i <= n - 1; i++ {
+	for i := 1; i <= n-1; i++ {
 		previousGraph = nextGraph(previousGraph)
 	}
 
@@ -70,14 +70,14 @@ func nextGraph(previousGraph *graph.Graph) *graph.Graph {
 	return previousGraph.AddNode(node)
 }
 
-func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, m int) graph.Graph {
+func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph {
 	result := graph.NewGraph()
 
-	j := 1
-	right := m
-	left := 1
+	j := left / m + 1
+	right := left + m
 	loops := []string{}
-	for i, node := range pregeneratedGraph.Nodes {
+	for i, node := range pregeneratedGraph.Nodes[from : to] {
+		log.Println(">> from ", from , " to ", to, " Node", node, " i ", i)
 		for _, associatedVertex := range node.AssociatedNodes {
 			current, _ := strconv.Atoi(associatedVertex)
 			if current < right && current > left {
@@ -87,7 +87,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, m in
 			}
 		}
 
-		if i == right-1 {
+		if i + from == right-1 {
 			if len(loops) > 0 {
 				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
 			} else if !result.ContainsVertex(strconv.Itoa(j)) {
@@ -104,7 +104,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, m in
 		}
 	}
 
-	log.Println("===> Step 2: Result: \n", *result)
+	//log.Println("===> Step 2: Result: \n", *result)
 	return *result
 }
 

@@ -11,8 +11,18 @@ type Generator interface {
 	Generate() graph.Graph
 }
 
+type FirstPhaseMultithreadGenerator struct {
+	GeneralGenerator
+	NumberThreads int
+}
+
+type SecondPhaseMultithreadGenerator struct {
+	GeneralGenerator
+	NumberThreads int
+}
+
 type BollobasRiordanGenerator interface {
 	Generator
 	buildInitialGraph(n int) graph.Graph
-	buildFinalGraph(initialGraph graph.Graph, m int) graph.Graph
+	buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph
 }

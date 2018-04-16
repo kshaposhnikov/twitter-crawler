@@ -6,12 +6,7 @@ import (
 	"strconv"
 )
 
-type MultithreadGenerator struct {
-	GeneralGenerator
-	NumberThreads int
-}
-
-func (gen MultithreadGenerator) Generate() graph.Graph {
+func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 	n := (gen.VCount * gen.ECount) / gen.NumberThreads
 	graphs := make(chan graph.Graph)
 	for i := 0; i < gen.NumberThreads; i++ {
@@ -20,7 +15,7 @@ func (gen MultithreadGenerator) Generate() graph.Graph {
 
 	intermidiateGraph := graph.NewGraph()
 	for i := 0; i < gen.NumberThreads; i++ {
-		intermidiateGraph = intermidiateGraph.Concat(<- graphs)
+		intermidiateGraph = intermidiateGraph.Concat(<-graphs)
 	}
 
 	log.Println(*intermidiateGraph)
@@ -33,16 +28,14 @@ func (gen MultithreadGenerator) Generate() graph.Graph {
 			intermidiateGraph.Nodes[i].AssociatedNodes[l] = updateVertex(intermidiateGraph.Nodes[i].AssociatedNodes[l], j)
 		}
 
-		if i == j * 2 - 1 {
+		if i == j*2-1 {
 			j *= 2
 		}
 	}
 
 	log.Println(intermidiateGraph)
 
-	result := buildFinalGraph(intermidiateGraph, gen.ECount)
-
-	return result
+	return buildFinalGraph(intermidiateGraph, gen.ECount)
 }
 
 func updateVertex(vertex string, j int) string {
@@ -57,5 +50,5 @@ func buildInitialGraph(n int, graphs chan graph.Graph) {
 
 func buildFinalGraph(initialGraph *graph.Graph, m int) graph.Graph {
 	simpleGenerator := GeneralGenerator{}
-	return simpleGenerator.buildFinalGraph(initialGraph, m)
+	return simpleGenerator.buildFinalGraph(initialGraph, 0, initialGraph.GetNodeCount(), 0, m)
 }
