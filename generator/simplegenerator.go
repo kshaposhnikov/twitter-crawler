@@ -2,13 +2,14 @@ package generator
 
 import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 import (
-	"github.com/kshaposhnikov/twitter-crawler/analyzer"
-	"gonum.org/v1/gonum/floats"
+	//"github.com/kshaposhnikov/twitter-crawler/analyzer"
 	"log"
 	"math"
 	"math/rand"
 	"sort"
 	"strconv"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 //bollobas-riordan
@@ -32,18 +33,20 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 		AssociatedNodes:      []string{"1"},
 	})
 
+	degree := make(map[int]int)
+	degree[0] = 2
+
 	for i := 1; i <= n-1; i++ {
-		previousGraph = nextGraph(previousGraph)
+		previousGraph = nextGraph(previousGraph, degree)
+		//log.Println(">>> Initial Graph", previousGraph)
 	}
 
-	log.Println("===> Step 1: Result: \n", *previousGraph)
 	return *previousGraph
 }
 
-func nextGraph(previousGraph *graph.Graph) *graph.Graph {
+func nextGraph(previousGraph *graph.Graph, degrees map[int]int) *graph.Graph {
 	//random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	degrees := analyzer.CalculateProwerByArray(previousGraph)
 	probabilities := calculateProbabilities(degrees)
 	cdf := cumsum(probabilities)
 
@@ -59,7 +62,9 @@ func nextGraph(previousGraph *graph.Graph) *graph.Graph {
 			AssociatedNodesCount: 1,
 			AssociatedNodes:      []string{strconv.Itoa(len(probabilities))},
 		}
+		degrees[len(probabilities)-1]++
 	} else {
+		degrees[idx]++
 		node = graph.Node{
 			Name:                 strconv.Itoa(len(probabilities)),
 			AssociatedNodesCount: 1,
@@ -67,17 +72,17 @@ func nextGraph(previousGraph *graph.Graph) *graph.Graph {
 		}
 	}
 
+	degrees[len(probabilities)-1]++
 	return previousGraph.AddNode(node)
 }
 
 func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph {
 	result := graph.NewGraph()
 
-	j := left / m + 1
+	j := left/m + 1
 	right := left + m
 	loops := []string{}
-	for i, node := range pregeneratedGraph.Nodes[from : to] {
-		log.Println(">> from ", from , " to ", to, " Node", node, " i ", i)
+	for i, node := range pregeneratedGraph.Nodes[from:to] {
 		for _, associatedVertex := range node.AssociatedNodes {
 			current, _ := strconv.Atoi(associatedVertex)
 			if current < right && current > left {
@@ -87,7 +92,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 			}
 		}
 
-		if i + from == right-1 {
+		if i+from == right-1 {
 			if len(loops) > 0 {
 				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
 			} else if !result.ContainsVertex(strconv.Itoa(j)) {
@@ -104,7 +109,6 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 		}
 	}
 
-	//log.Println("===> Step 2: Result: \n", *result)
 	return *result
 }
 
@@ -116,7 +120,7 @@ func calculateInterval(number int, m int) int {
 	}
 }
 
-func calculateProbabilities(degrees map[string]int) []float64 {
+func calculateProbabilities(degrees map[int]int) []float64 {
 	n := float64(len(degrees) + 1)
 	var probabilities []float64
 	for _, power := range degrees {

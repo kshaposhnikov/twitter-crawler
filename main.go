@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"gopkg.in/mgo.v2"
 
@@ -23,6 +24,7 @@ func main() {
 	csvFile := argFlags.String("load-csv", "", "CSV file with data about Twitter users")
 	analyze := argFlags.Bool("analyze", false, "Start analyzing of existing graph")
 	generate := argFlags.String("generate", "", "Generate new graph")
+	threadNumber := argFlags.Int("thread-number", 1, "Number of thread to asynchronous generation of graph")
 	argFlags.Parse(os.Args[1:])
 
 	var db *mgo.Database = nil
@@ -51,13 +53,18 @@ func main() {
 			n, _ := strconv.Atoi(nm[0])
 			m, _ := strconv.Atoi(nm[1])
 
-			generator.SecondPhaseMultithreadGenerator{
+			start := time.Now()
+			log.Println(start)
+			result := generator.SecondPhaseMultithreadGenerator{
 				GeneralGenerator: generator.GeneralGenerator{
 					VCount: n,
 					ECount: m,
 				},
-				NumberThreads: 3,
+				NumberThreads: *threadNumber,
 			}.Generate()
+			log.Println(time.Now().Sub(start))
+
+			log.Println(">>> Final", result)
 
 			// generator.GeneralGenerator{
 			// 	VCount: n,

@@ -9,6 +9,7 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		gen.ECount,
 	}
 	initialGraph := generator.buildInitialGraph(gen.VCount * gen.ECount)
+	log.Println(">>> Initial Graph", initialGraph)
 	graphs := make(chan graph.Graph)
 	batch := (gen.VCount * gen.ECount) / gen.NumberThreads
 	for i := 0; i < gen.NumberThreads; i++ {
@@ -16,11 +17,12 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		go execInNewThread(&initialGraph, left, left+batch, left, gen.ECount, graphs)
 	}
 
+	result := graph.NewGraph()
 	for i := 0; i < gen.NumberThreads; i++ {
-		log.Println("Final", <-graphs)
+		result.Concat(<-graphs)
 	}
 
-	return *graph.NewGraph()
+	return *result
 }
 
 func execInNewThread(initialGraph *graph.Graph, from, to, left, m int, graphs chan graph.Graph) {
