@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 
+	"runtime"
+
 	"github.com/kshaposhnikov/twitter-crawler/analyzer"
 	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 	"github.com/kshaposhnikov/twitter-crawler/crawler/user"
@@ -24,8 +26,10 @@ func main() {
 	csvFile := argFlags.String("load-csv", "", "CSV file with data about Twitter users")
 	analyze := argFlags.Bool("analyze", false, "Start analyzing of existing graph")
 	generate := argFlags.String("generate", "", "Generate new graph")
-	threadNumber := argFlags.Int("thread-number", 1, "Number of thread to asynchronous generation of graph")
+	//threadNumber := argFlags.Int("thread-number", 1, "Number of thread to asynchronous generation of graph")
 	argFlags.Parse(os.Args[1:])
+
+	runtime.GOMAXPROCS(4)
 
 	var db *mgo.Database = nil
 
@@ -55,16 +59,16 @@ func main() {
 
 			start := time.Now()
 			log.Println(start)
-			result := generator.SecondPhaseMultithreadGenerator{
+			generator.SecondPhaseMultithreadGenerator{
 				GeneralGenerator: generator.GeneralGenerator{
 					VCount: n,
 					ECount: m,
 				},
-				NumberThreads: *threadNumber,
+				NumberThreads: 1,
 			}.Generate()
 			log.Println(time.Now().Sub(start))
 
-			log.Println(">>> Final", result)
+			//log.Println(">>> Final", result)
 
 			// generator.GeneralGenerator{
 			// 	VCount: n,

@@ -1,7 +1,6 @@
 package generator
 
 import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
-import "log"
 
 func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 	generator := GeneralGenerator{
@@ -9,7 +8,7 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		gen.ECount,
 	}
 	initialGraph := generator.buildInitialGraph(gen.VCount * gen.ECount)
-	log.Println(">>> Initial Graph", initialGraph)
+//	log.Println(">>> Initial Graph", initialGraph)
 	graphs := make(chan graph.Graph)
 	batch := (gen.VCount * gen.ECount) / gen.NumberThreads
 	for i := 0; i < gen.NumberThreads; i++ {

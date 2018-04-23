@@ -9,6 +9,10 @@ import (
 	"sort"
 	"strconv"
 
+	"runtime"
+	"sync"
+	"time"
+
 	"gonum.org/v1/gonum/floats"
 )
 
@@ -33,47 +37,52 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 		AssociatedNodes:      []string{"1"},
 	})
 
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	degree := make(map[int]int)
 	degree[0] = 2
-
 	for i := 1; i <= n-1; i++ {
-		previousGraph = nextGraph(previousGraph, degree)
+		previousGraph = nextGraph(previousGraph, degree, random)
 		//log.Println(">>> Initial Graph", previousGraph)
 	}
 
 	return *previousGraph
 }
 
-func nextGraph(previousGraph *graph.Graph, degrees map[int]int) *graph.Graph {
-	//random := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	probabilities := calculateProbabilities(degrees)
+func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Rand) *graph.Graph {
+	probabilities := mtCalculateProbabilities(degrees)
+	//probabilities := calculateProbabilities(degrees, 0, len(degrees))
 	cdf := cumsum(probabilities)
 
-	x := rand.Float64()
+	x := random.Float64()
 	idx := sort.Search(len(cdf), func(i int) bool {
 		return cdf[i] > x
 	})
 
-	var node graph.Node
-	if idx > previousGraph.GetNodeCount() {
-		node = graph.Node{
-			Name:                 strconv.Itoa(len(probabilities)),
-			AssociatedNodesCount: 1,
-			AssociatedNodes:      []string{strconv.Itoa(len(probabilities))},
-		}
-		degrees[len(probabilities)-1]++
-	} else {
-		degrees[idx]++
-		node = graph.Node{
-			Name:                 strconv.Itoa(len(probabilities)),
-			AssociatedNodesCount: 1,
-			AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
-		}
-	}
+	// var node graph.Node
+	// if idx > previousGraph.GetNodeCount() {
+	// 	node = graph.Node{
+	// 		Name:                 strconv.Itoa(len(probabilities)),
+	// 		AssociatedNodesCount: 1,
+	// 		AssociatedNodes:      []string{strconv.Itoa(len(probabilities))},
+	// 	}
+	// 	degrees[len(probabilities)-1]++
+	// } else {
+	// 	degrees[idx]++
+	// 	node = graph.Node{
+	// 		Name:                 strconv.Itoa(len(probabilities)),
+	// 		AssociatedNodesCount: 1,
+	// 		AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
+	// 	}
+	// }
+
+	degrees[idx]++
 
 	degrees[len(probabilities)-1]++
-	return previousGraph.AddNode(node)
+	return previousGraph.AddNode(graph.Node{
+		Name:                 strconv.Itoa(len(probabilities)),
+		AssociatedNodesCount: 1,
+		AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
+	})
 }
 
 func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph {
@@ -120,11 +129,53 @@ func calculateInterval(number int, m int) int {
 	}
 }
 
-func calculateProbabilities(degrees map[int]int) []float64 {
+func mtCalculateProbabilities(degrees map[int]int) []float64 {
+	cpu := runtime.NumCPU()
+	if len(degrees) > cpu*10 {
+		probabilityResults := make(chan probabilityResult, 5)
+		batch := int(math.Trunc(float64(len(degrees))/float64(cpu))) + 1
+		var wg sync.WaitGroup
+		wg.Add(cpu)
+		for i := 0; i < cpu; i++ {
+			from := i * batch
+			to := from + batch
+			if i == cpu-1 {
+				to = len(degrees) - 2
+			}
+
+			go func(degrees map[int]int, from, to, order int, res chan probabilityResult) {
+				defer wg.Done()
+				res <- probabilityResult{
+					order,
+					calculateProbabilities(degrees, from, to),
+				}
+			}(degrees, from, to, i, probabilityResults)
+		}
+		wg.Wait()
+		close(probabilityResults)
+
+		var probabilities []probabilityResult
+		for result := range probabilityResults {
+			probabilities = append(probabilities, result)
+		}
+		sort.Slice(probabilities, func(i, j int) bool {
+			return probabilities[i].order > probabilities[j].order
+		})
+		var result []float64
+		for _, item := range probabilities {
+			result = append(result, item.probabilities...)
+		}
+		return result
+	} else {
+		return calculateProbabilities(degrees, 0, len(degrees))
+	}
+}
+
+func calculateProbabilities(degrees map[int]int, from, to int) []float64 {
 	n := float64(len(degrees) + 1)
 	var probabilities []float64
-	for _, power := range degrees {
-		probabilities = append(probabilities, float64(power)/(2.0*n-1.0))
+	for i := from; i < to; i++ {
+		probabilities = append(probabilities, float64(degrees[i])/(2.0*n-1.0))
 	}
 	return append(probabilities, 1.0/(2.0*n-1.0))
 }
@@ -132,4 +183,9 @@ func calculateProbabilities(degrees map[int]int) []float64 {
 func cumsum(probabilities []float64) []float64 {
 	dest := make([]float64, len(probabilities))
 	return floats.CumSum(dest, probabilities)
+}
+
+type probabilityResult struct {
+	order         int
+	probabilities []float64
 }
