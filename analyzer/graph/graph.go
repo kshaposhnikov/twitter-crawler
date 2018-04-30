@@ -18,7 +18,7 @@ func NewGraph() *Graph {
 
 func (graph *Graph) Concat(newGraph Graph) *Graph{
 	for _, node := range newGraph.Nodes {
-		graph.AddNode(node)
+		graph.AddAssociatedNodesTo(node.Name, node.AssociatedNodes)
 	}
 	return graph
 }

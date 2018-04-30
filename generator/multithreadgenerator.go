@@ -50,5 +50,5 @@ func buildInitialGraph(n int, graphs chan graph.Graph) {
 
 func buildFinalGraph(initialGraph *graph.Graph, m int) graph.Graph {
 	simpleGenerator := GeneralGenerator{}
-	return simpleGenerator.buildFinalGraph(initialGraph, 0, initialGraph.GetNodeCount(), 0, m)
+	return simpleGenerator.buildFinalGraph(initialGraph, 0, initialGraph.GetNodeCount(), m)
 }

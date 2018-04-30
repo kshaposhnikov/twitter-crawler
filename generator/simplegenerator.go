@@ -2,7 +2,6 @@ package generator
 
 import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 import (
-	//"github.com/kshaposhnikov/twitter-crawler/analyzer"
 	"log"
 	"math"
 	"math/rand"
@@ -26,7 +25,7 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 	}
 
 	var previousGraph = gen.buildInitialGraph(n * m)
-	return gen.buildFinalGraph(&previousGraph, 0, previousGraph.GetNodeCount(), 1, m)
+	return gen.buildFinalGraph(&previousGraph, 0, previousGraph.GetNodeCount(), m)
 }
 
 func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
@@ -42,7 +41,6 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 	degree[0] = 2
 	for i := 1; i <= n-1; i++ {
 		previousGraph = nextGraph(previousGraph, degree, random)
-		//log.Println(">>> Initial Graph", previousGraph)
 	}
 
 	return *previousGraph
@@ -50,30 +48,12 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 
 func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Rand) *graph.Graph {
 	probabilities := mtCalculateProbabilities(degrees)
-	//probabilities := calculateProbabilities(degrees, 0, len(degrees))
 	cdf := cumsum(probabilities)
 
 	x := random.Float64()
 	idx := sort.Search(len(cdf), func(i int) bool {
 		return cdf[i] > x
 	})
-
-	// var node graph.Node
-	// if idx > previousGraph.GetNodeCount() {
-	// 	node = graph.Node{
-	// 		Name:                 strconv.Itoa(len(probabilities)),
-	// 		AssociatedNodesCount: 1,
-	// 		AssociatedNodes:      []string{strconv.Itoa(len(probabilities))},
-	// 	}
-	// 	degrees[len(probabilities)-1]++
-	// } else {
-	// 	degrees[idx]++
-	// 	node = graph.Node{
-	// 		Name:                 strconv.Itoa(len(probabilities)),
-	// 		AssociatedNodesCount: 1,
-	// 		AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
-	// 	}
-	// }
 
 	degrees[idx]++
 
@@ -85,13 +65,15 @@ func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Ran
 	})
 }
 
-func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph {
+func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, m int) graph.Graph {
 	result := graph.NewGraph()
 
+	left := from
 	j := left/m + 1
-	right := left + m
+	right := j * m - 1
 	loops := []string{}
-	for i, node := range pregeneratedGraph.Nodes[from:to] {
+	l := 0
+	for _, node := range pregeneratedGraph.Nodes[from:to] {
 		for _, associatedVertex := range node.AssociatedNodes {
 			current, _ := strconv.Atoi(associatedVertex)
 			if current < right && current > left {
@@ -101,7 +83,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 			}
 		}
 
-		if i+from == right-1 {
+		if ((left + l + 1) / m) + 1 > j {
 			if len(loops) > 0 {
 				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
 			} else if !result.ContainsVertex(strconv.Itoa(j)) {
@@ -112,10 +94,12 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 				})
 			}
 			loops = []string{}
-			left = right
+			left = right + 1
 			right += m
 			j++
+			l = -1
 		}
+		l++
 	}
 
 	return *result
@@ -129,27 +113,29 @@ func calculateInterval(number int, m int) int {
 	}
 }
 
+const nodeRate = 10
+
 func mtCalculateProbabilities(degrees map[int]int) []float64 {
-	cpu := runtime.NumCPU()
-	if len(degrees) > cpu*10 {
-		probabilityResults := make(chan probabilityResult, 5)
-		batch := int(math.Trunc(float64(len(degrees))/float64(cpu))) + 1
+	if len(degrees) > runtime.NumCPU() * nodeRate {
+		batch := calculateInterval(len(degrees), runtime.NumCPU())
+		goroutineNumber := calculateInterval(len(degrees), batch)
+		probabilityResults := make(chan probabilityResult, goroutineNumber)
 		var wg sync.WaitGroup
-		wg.Add(cpu)
-		for i := 0; i < cpu; i++ {
+		wg.Add(goroutineNumber)
+		for i := 0; i < goroutineNumber; i++ {
 			from := i * batch
 			to := from + batch
-			if i == cpu-1 {
-				to = len(degrees) - 2
+			if to >= len(degrees)  {
+				to = len(degrees)
 			}
 
-			go func(degrees map[int]int, from, to, order int, res chan probabilityResult) {
+			go func(order int) {
 				defer wg.Done()
-				res <- probabilityResult{
+				probabilityResults <- probabilityResult{
 					order,
 					calculateProbabilities(degrees, from, to),
 				}
-			}(degrees, from, to, i, probabilityResults)
+			}(i)
 		}
 		wg.Wait()
 		close(probabilityResults)
@@ -177,7 +163,12 @@ func calculateProbabilities(degrees map[int]int, from, to int) []float64 {
 	for i := from; i < to; i++ {
 		probabilities = append(probabilities, float64(degrees[i])/(2.0*n-1.0))
 	}
-	return append(probabilities, 1.0/(2.0*n-1.0))
+
+	if to == len(degrees) {
+		probabilities = append(probabilities, 1.0/(2.0*n-1.0))
+	}
+
+	return probabilities
 }
 
 func cumsum(probabilities []float64) []float64 {

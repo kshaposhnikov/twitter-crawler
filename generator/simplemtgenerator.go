@@ -1,6 +1,9 @@
 package generator
 
-import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+import (
+	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+	"sync"
+)
 
 func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 	generator := GeneralGenerator{
@@ -8,23 +11,29 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		gen.ECount,
 	}
 	initialGraph := generator.buildInitialGraph(gen.VCount * gen.ECount)
-//	log.Println(">>> Initial Graph", initialGraph)
-	graphs := make(chan graph.Graph)
-	batch := (gen.VCount * gen.ECount) / gen.NumberThreads
-	for i := 0; i < gen.NumberThreads; i++ {
-		left := i * batch
-		go execInNewThread(&initialGraph, left, left+batch, left, gen.ECount, graphs)
+	batch := calculateInterval(gen.VCount * gen.ECount, gen.NumberThreads)
+	goroutineNumber := calculateInterval(initialGraph.GetNodeCount(), batch)
+	graphs := make(chan graph.Graph, goroutineNumber)
+	var wg sync.WaitGroup
+	wg.Add(goroutineNumber)
+	for i := 0; i < goroutineNumber; i++ {
+		from := i * batch
+		to := from + batch
+		if to >= initialGraph.GetNodeCount()  {
+			to = initialGraph.GetNodeCount()
+		}
+		go func() {
+			defer wg.Done()
+			graphs <- generator.buildFinalGraph(&initialGraph, from, to, gen.ECount)
+		}()
 	}
+	wg.Wait()
+	close(graphs)
 
 	result := graph.NewGraph()
-	for i := 0; i < gen.NumberThreads; i++ {
-		result.Concat(<-graphs)
+	for item := range graphs {
+		result.Concat(item)
 	}
 
 	return *result
-}
-
-func execInNewThread(initialGraph *graph.Graph, from, to, left, m int, graphs chan graph.Graph) {
-	simpleGenerator := GeneralGenerator{}
-	graphs <- simpleGenerator.buildFinalGraph(initialGraph, from, to, left, m)
 }
