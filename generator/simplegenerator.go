@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"gonum.org/v1/gonum/floats"
+	"github.com/sirupsen/logrus"
 )
 
 //bollobas-riordan
@@ -41,6 +42,7 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 	degree[0] = 2
 	for i := 1; i <= n-1; i++ {
 		previousGraph = nextGraph(previousGraph, degree, random)
+		logrus.Debug("[simplegenerator.buildInitialGraph] Graph for n = ", i, *previousGraph)
 	}
 
 	return *previousGraph
