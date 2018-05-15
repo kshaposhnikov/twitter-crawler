@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
 	"sync"
 )
 
@@ -11,7 +11,7 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		gen.ECount,
 	}
 	initialGraph := generator.buildInitialGraph(gen.VCount * gen.ECount)
-	batch := calculateInterval(gen.VCount * gen.ECount, gen.NumberThreads)
+	batch := calculateInterval(gen.VCount*gen.ECount, gen.NumberThreads)
 	goroutineNumber := calculateInterval(initialGraph.GetNodeCount(), batch)
 	graphs := make(chan graph.Graph, goroutineNumber)
 	var wg sync.WaitGroup
@@ -19,7 +19,7 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 	for i := 0; i < goroutineNumber; i++ {
 		from := i * batch
 		to := from + batch
-		if to >= initialGraph.GetNodeCount()  {
+		if to >= initialGraph.GetNodeCount() {
 			to = initialGraph.GetNodeCount()
 		}
 		go func() {

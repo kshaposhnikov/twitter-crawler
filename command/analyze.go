@@ -1,15 +1,15 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 	"github.com/kshaposhnikov/twitter-crawler/analyzer"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
+	"github.com/spf13/cobra"
 )
 
 var analyzeCmd = &cobra.Command{
-	Use: "analyze-graph",
+	Use:   "analyze-graph",
 	Short: "Analyze graph which is stored in a database",
-	Run: analyze,
+	Run:   analyze,
 }
 
 var contextDir string

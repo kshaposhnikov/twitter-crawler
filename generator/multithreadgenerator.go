@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
 	"log"
 	"strconv"
 )

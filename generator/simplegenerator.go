@@ -1,6 +1,6 @@
 package generator
 
-import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+import "github.com/kshaposhnikov/twitter-crawler/graph"
 import (
 	"log"
 	"math"
@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"gonum.org/v1/gonum/floats"
 	"github.com/sirupsen/logrus"
+	"gonum.org/v1/gonum/floats"
 )
 
 //bollobas-riordan
@@ -72,7 +72,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 
 	left := from
 	j := left/m + 1
-	right := j * m - 1
+	right := j*m - 1
 	loops := []string{}
 	l := 0
 	for _, node := range pregeneratedGraph.Nodes[from:to] {
@@ -85,7 +85,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 			}
 		}
 
-		if ((left + l + 1) / m) + 1 > j {
+		if ((left+l+1)/m)+1 > j {
 			if len(loops) > 0 {
 				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
 			} else if !result.ContainsVertex(strconv.Itoa(j)) {
@@ -118,7 +118,7 @@ func calculateInterval(number int, m int) int {
 const nodeRate = 10
 
 func mtCalculateProbabilities(degrees map[int]int) []float64 {
-	if len(degrees) > runtime.NumCPU() * nodeRate {
+	if len(degrees) > runtime.NumCPU()*nodeRate {
 		batch := calculateInterval(len(degrees), runtime.NumCPU())
 		goroutineNumber := calculateInterval(len(degrees), batch)
 		probabilityResults := make(chan probabilityResult, goroutineNumber)
@@ -127,7 +127,7 @@ func mtCalculateProbabilities(degrees map[int]int) []float64 {
 		for i := 0; i < goroutineNumber; i++ {
 			from := i * batch
 			to := from + batch
-			if to >= len(degrees)  {
+			if to >= len(degrees) {
 				to = len(degrees)
 			}
 

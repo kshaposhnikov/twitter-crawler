@@ -1,7 +1,7 @@
 package analyzer
 
 import (
-	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
 
 	"gopkg.in/mgo.v2"
 )
@@ -19,7 +19,7 @@ func CalcluatePowerByIter(iterator *mgo.Iter, context *AnalyzerContext) {
 	iterator.Close()
 }
 
-func CalculateProwerByArray(graph *graph.Graph) map[string]int{
+func CalculateProwerByArray(graph *graph.Graph) map[string]int {
 	powerVertex := make(map[string]int)
 	for _, item := range graph.Nodes {
 		powerVertex[item.Name] += item.AssociatedNodesCount

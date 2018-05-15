@@ -1,18 +1,18 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/sirupsen/logrus"
 	"github.com/kshaposhnikov/twitter-crawler/crawler/user"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"gopkg.in/mgo.v2"
 	"strconv"
-	"github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
 )
 
 var loadCsvCmd = &cobra.Command{
-	Use: "load-csv",
+	Use:   "load-csv",
 	Short: "Load CSV file with data about Twitter users",
-	Run: loadCsv,
+	Run:   loadCsv,
 }
 
 func loadCsv(cmd *cobra.Command, args []string) {

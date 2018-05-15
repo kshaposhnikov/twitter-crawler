@@ -1,6 +1,6 @@
 package generator
 
-import "github.com/kshaposhnikov/twitter-crawler/analyzer/graph"
+import "github.com/kshaposhnikov/twitter-crawler/graph"
 
 type GeneralGenerator struct {
 	VCount int
