@@ -27,7 +27,7 @@ func StoreVertex(database *mgo.Database, node ...Node) {
 	for iter, edge := range node {
 		err := database.C("graph").Insert(edge)
 		if err != nil {
-			log.Fatal("#", iter, "Error in the time of insrting edge for node", edge.Name, "\n", err)
+			log.Fatal("#", iter, "Error in the time of insrting edge for node", edge.Id, "\n", err)
 		}
 	}
 }

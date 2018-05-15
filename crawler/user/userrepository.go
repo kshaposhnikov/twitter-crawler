@@ -8,16 +8,16 @@ import (
 )
 
 type User struct {
-	ID             string
+	ID             int
 	ScreenNames    string
 	Tags           string
 	Avatar         string
-	FollowersCount string
-	FriendsCount   string
+	FollowersCount int
+	FriendsCount   int
 	Lang           string
 	LastSeen       string
-	TweetID        string
-	Friends        []string
+	TweetID        int
+	Friends        []int
 }
 
 func FindAll(database *mgo.Database) []User {

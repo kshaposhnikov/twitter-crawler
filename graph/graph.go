@@ -1,9 +1,9 @@
 package graph
 
 type Node struct {
-	Name                 string
+	Id                   int
 	AssociatedNodesCount int
-	AssociatedNodes      []string
+	AssociatedNodes      []int
 }
 
 type Graph struct {
@@ -18,7 +18,7 @@ func NewGraph() *Graph {
 
 func (graph *Graph) Concat(newGraph Graph) *Graph {
 	for _, node := range newGraph.Nodes {
-		graph.AddAssociatedNodesTo(node.Name, node.AssociatedNodes)
+		graph.AddAssociatedNodesTo(node.Id, node.AssociatedNodes)
 	}
 	return graph
 }
@@ -28,9 +28,9 @@ func (graph *Graph) AddNode(node Node) *Graph {
 	return graph
 }
 
-func (graph *Graph) ContainsVertex(name string) bool {
+func (graph *Graph) ContainsVertex(id int) bool {
 	for _, node := range graph.Nodes {
-		if node.Name == name {
+		if node.Id == id {
 			return true
 		}
 	}
@@ -38,16 +38,16 @@ func (graph *Graph) ContainsVertex(name string) bool {
 	return false
 }
 
-func (graph *Graph) AddAssociatedNodesTo(name string, associatedNodes []string) *Graph {
+func (graph *Graph) AddAssociatedNodesTo(id int, associatedNodes []int) *Graph {
 	for _, associatedNode := range associatedNodes {
-		graph.AddAssociatedNodeTo(name, associatedNode)
+		graph.AddAssociatedNodeTo(id, associatedNode)
 	}
 	return graph
 }
 
-func (graph *Graph) AddAssociatedNodeTo(name string, associatedNodeName string) *Graph {
+func (graph *Graph) AddAssociatedNodeTo(id int, associatedNodeName int) *Graph {
 	for i, node := range graph.Nodes {
-		if node.Name == name {
+		if node.Id == id {
 			graph.Nodes[i].AssociatedNodesCount++
 			graph.Nodes[i].AssociatedNodes = append(graph.Nodes[i].AssociatedNodes, associatedNodeName)
 			return graph
@@ -55,9 +55,9 @@ func (graph *Graph) AddAssociatedNodeTo(name string, associatedNodeName string) 
 	}
 
 	return graph.AddNode(Node{
-		Name:                 name,
+		Id:                   id,
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []string{associatedNodeName},
+		AssociatedNodes:      []int{associatedNodeName},
 	})
 }
 

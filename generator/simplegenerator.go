@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/rand"
 	"sort"
-	"strconv"
 
 	"runtime"
 	"sync"
@@ -32,9 +31,9 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 	previousGraph := graph.NewGraph()
 	previousGraph.AddNode(graph.Node{
-		Name:                 "1",
+		Id:                   1,
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []string{"1"},
+		AssociatedNodes:      []int{1},
 	})
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -61,9 +60,9 @@ func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Ran
 
 	degrees[len(probabilities)-1]++
 	return previousGraph.AddNode(graph.Node{
-		Name:                 strconv.Itoa(len(probabilities)),
+		Id:                   len(probabilities),
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []string{strconv.Itoa(idx + 1)},
+		AssociatedNodes:      []int{idx + 1},
 	})
 }
 
@@ -73,29 +72,28 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 	left := from
 	j := left/m + 1
 	right := j*m - 1
-	loops := []string{}
+	loops := []int{}
 	l := 0
 	for _, node := range pregeneratedGraph.Nodes[from:to] {
 		for _, associatedVertex := range node.AssociatedNodes {
-			current, _ := strconv.Atoi(associatedVertex)
-			if current < right && current > left {
-				loops = append(loops, strconv.Itoa(j))
-			} else if current >= right || current <= left {
-				result = result.AddAssociatedNodeTo(strconv.Itoa(j), strconv.Itoa(calculateInterval(current, m)))
+			if associatedVertex < right && associatedVertex > left {
+				loops = append(loops, j)
+			} else if associatedVertex >= right || associatedVertex <= left {
+				result = result.AddAssociatedNodeTo(j, calculateInterval(associatedVertex, m))
 			}
 		}
 
 		if ((left+l+1)/m)+1 > j {
 			if len(loops) > 0 {
-				result = result.AddAssociatedNodesTo(strconv.Itoa(j), loops)
-			} else if !result.ContainsVertex(strconv.Itoa(j)) {
+				result = result.AddAssociatedNodesTo(j, loops)
+			} else if !result.ContainsVertex(j) {
 				result = result.AddNode(graph.Node{
-					Name:                 strconv.Itoa(j),
+					Id:                   j,
 					AssociatedNodesCount: len(loops),
 					AssociatedNodes:      loops,
 				})
 			}
-			loops = []string{}
+			loops = []int{}
 			left = right + 1
 			right += m
 			j++

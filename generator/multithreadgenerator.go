@@ -3,7 +3,6 @@ package generator
 import (
 	"github.com/kshaposhnikov/twitter-crawler/graph"
 	"log"
-	"strconv"
 )
 
 func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
@@ -22,10 +21,10 @@ func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 
 	j := n
 	for i := n; i < intermidiateGraph.GetNodeCount(); i++ {
-		intermidiateGraph.Nodes[i].Name = updateVertex(intermidiateGraph.Nodes[i].Name, j)
+		intermidiateGraph.Nodes[i].Id += j
 
 		for l := 0; l < len(intermidiateGraph.Nodes[i].AssociatedNodes); l++ {
-			intermidiateGraph.Nodes[i].AssociatedNodes[l] = updateVertex(intermidiateGraph.Nodes[i].AssociatedNodes[l], j)
+			intermidiateGraph.Nodes[i].AssociatedNodes[l] += j
 		}
 
 		if i == j*2-1 {
@@ -36,11 +35,6 @@ func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 	log.Println(intermidiateGraph)
 
 	return buildFinalGraph(intermidiateGraph, gen.ECount)
-}
-
-func updateVertex(vertex string, j int) string {
-	current, _ := strconv.Atoi(vertex)
-	return strconv.Itoa(current + j)
 }
 
 func buildInitialGraph(n int, graphs chan graph.Graph) {

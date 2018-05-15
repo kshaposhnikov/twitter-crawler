@@ -44,7 +44,7 @@ func parseCSVLine(inputLine string) User {
 	}
 
 	return User{
-		ID:             columns[0],
+		ID:             strconv.Atoi(columns[0]),
 		ScreenNames:    columns[1],
 		Tags:           columns[2],
 		Avatar:         columns[3],

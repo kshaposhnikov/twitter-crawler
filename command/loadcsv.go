@@ -41,7 +41,7 @@ func buildGraph(db *mgo.Database, users []user.User) {
 	for _, user := range users {
 		value, _ := strconv.Atoi(user.FriendsCount)
 		graph.StoreVertex(db, graph.Node{
-			Name:                 user.ID,
+			Id:                   user.ID,
 			AssociatedNodesCount: value,
 			AssociatedNodes:      user.Friends,
 		})
