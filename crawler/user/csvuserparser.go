@@ -5,7 +5,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 func ReadCSV(path string) []User {
@@ -44,15 +47,29 @@ func parseCSVLine(inputLine string) User {
 	}
 
 	return User{
-		ID:             strconv.Atoi(columns[0]),
+		ID:             atoi(columns[0]),
 		ScreenNames:    columns[1],
 		Tags:           columns[2],
 		Avatar:         columns[3],
-		FollowersCount: columns[4],
-		FriendsCount:   columns[5],
+		FollowersCount: atoi(columns[4]),
+		FriendsCount:   atoi(columns[5]),
 		Lang:           columns[6],
 		LastSeen:       columns[7],
-		TweetID:        columns[8],
-		Friends:        columns[9:],
+		TweetID:        atoi(columns[8]),
+		Friends: func() []int {
+			result := make([]int, len(columns[9:]))
+			for _, item := range columns[9:] {
+				result = append(result, atoi(item))
+			}
+			return result
+		}(),
 	}
+}
+
+func atoi(str string) int {
+	res, err := strconv.Atoi(str)
+	if err != nil {
+		logrus.Fatalln("Cann't convert Str", str, "to int")
+	}
+	return res
 }

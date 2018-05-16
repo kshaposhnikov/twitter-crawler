@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/mgo.v2"
-	"strconv"
 )
 
 var loadCsvCmd = &cobra.Command{
@@ -39,10 +38,9 @@ func fillUsers(db *mgo.Database, path string) []user.User {
 
 func buildGraph(db *mgo.Database, users []user.User) {
 	for _, user := range users {
-		value, _ := strconv.Atoi(user.FriendsCount)
 		graph.StoreVertex(db, graph.Node{
 			Id:                   user.ID,
-			AssociatedNodesCount: value,
+			AssociatedNodesCount: user.FriendsCount,
 			AssociatedNodes:      user.Friends,
 		})
 	}
