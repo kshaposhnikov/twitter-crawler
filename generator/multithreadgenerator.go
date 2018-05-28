@@ -7,7 +7,7 @@ import (
 
 func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 	n := (gen.VCount * gen.ECount) / gen.NumberThreads
-	graphs := make(chan graph.Graph)
+	graphs := make(chan *graph.Graph)
 	for i := 0; i < gen.NumberThreads; i++ {
 		go buildInitialGraph(n, graphs)
 	}
@@ -37,7 +37,7 @@ func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 	return buildFinalGraph(intermidiateGraph, gen.ECount)
 }
 
-func buildInitialGraph(n int, graphs chan graph.Graph) {
+func buildInitialGraph(n int, graphs chan *graph.Graph) {
 	simpleGenerator := GeneralGenerator{}
 	graphs <- simpleGenerator.buildInitialGraph(n)
 }

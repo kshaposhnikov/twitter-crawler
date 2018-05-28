@@ -16,7 +16,7 @@ func NewGraph() *Graph {
 	}
 }
 
-func (graph *Graph) Concat(newGraph Graph) *Graph {
+func (graph *Graph) Concat(newGraph *Graph) *Graph {
 	for _, node := range newGraph.Nodes {
 		graph.AddAssociatedNodesTo(node.Id, node.AssociatedNodes)
 	}

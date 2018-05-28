@@ -1,25 +1,45 @@
 package crawler
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/dghubble/go-twitter/twitter"
-	"golang.org/x/oauth2"
+	"github.com/ChimeraCoder/anaconda"
+	"github.com/sirupsen/logrus"
+	"net/url"
 )
 
-func GetClient(accessToken *string) *twitter.Client {
-	config := oauth2.Config{}
-	token := &oauth2.Token{AccessToken: *accessToken}
-	client := config.Client(context.Background(), token)
-	return twitter.NewClient(client)
+type Crawler struct {
+	twitterApi *anaconda.TwitterApi
+	depth      int
 }
 
-func GetTwitterUser(twitterClient *twitter.Client, screenName string) {
-	userParams := twitter.UserLookupParams{ScreenName: []string{screenName}}
-	users, _, _ := twitterClient.Users.Lookup(&userParams)
+func New(api *anaconda.TwitterApi, depthToLook int) *Crawler {
+	return &Crawler{
+		twitterApi: api,
+		depth:      depthToLook,
+	}
+}
 
-	for _, twitterUser := range users {
-		fmt.Println("Current user has ", twitterUser.FollowersCount)
+func (crw *Crawler) Start(startUser string) {
+	users, err := crw.twitterApi.GetUserSearch(startUser, nil)
+	if err != nil {
+		logrus.Fatalln("Failed to search user", err)
+	}
+
+	loadFollowers(users[0].Id, 0)
+}
+
+func (crw *Crawler) loadFollowers(userId int, currentDepth int) {
+	if currentDepth == crw.depth {
+		return
+	}
+
+	v := url.Values{"user_id": userId}
+	for page := range crw.twitterApi.GetFollowersIdsAll(v) {
+		currentDepth++
+
+	}
+
+	for _, user := range users {
+		crw.twitterApi.GetFollowersIdsAll(v)
+		logrus.Info(user.Name, " ", user.FollowersCount)
 	}
 }

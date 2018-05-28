@@ -25,10 +25,10 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 	}
 
 	var previousGraph = gen.buildInitialGraph(n * m)
-	return gen.buildFinalGraph(&previousGraph, 0, previousGraph.GetNodeCount(), m)
+	return gen.buildFinalGraph(previousGraph, 0, previousGraph.GetNodeCount(), m)
 }
 
-func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
+func (gen GeneralGenerator) buildInitialGraph(n int) *graph.Graph {
 	previousGraph := graph.NewGraph()
 	previousGraph.AddNode(graph.Node{
 		Id:                   1,
@@ -44,7 +44,7 @@ func (gen GeneralGenerator) buildInitialGraph(n int) graph.Graph {
 		logrus.Debug("[simplegenerator.buildInitialGraph] Graph for n = ", i, *previousGraph)
 	}
 
-	return *previousGraph
+	return previousGraph
 }
 
 func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Rand) *graph.Graph {

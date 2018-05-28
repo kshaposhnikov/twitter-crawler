@@ -1,10 +1,10 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
-	"log"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"gopkg.in/mgo.v2"
+	"log"
 )
 
 const skipDB = true
@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	initLogger()
-	rootCmd.AddCommand(loadCsvCmd, generateCmd, analyzeCmd)
+	rootCmd.AddCommand(loadCsvCmd, generateCmd, analyzeCmd, crawlerCmd)
 }
 
 func initLogger() {

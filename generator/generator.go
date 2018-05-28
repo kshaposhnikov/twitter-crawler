@@ -20,9 +20,3 @@ type SecondPhaseMultithreadGenerator struct {
 	GeneralGenerator
 	NumberThreads int
 }
-
-type BollobasRiordanGenerator interface {
-	Generator
-	buildInitialGraph(n int) graph.Graph
-	buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, left, m int) graph.Graph
-}
