@@ -4,6 +4,7 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/sirupsen/logrus"
 	"net/url"
+	"strconv"
 )
 
 type Crawler struct {
@@ -24,22 +25,30 @@ func (crw *Crawler) Start(startUser string) {
 		logrus.Fatalln("Failed to search user", err)
 	}
 
-	loadFollowers(users[0].Id, 0)
+	crw.loadFollowers(users[0].Id, 0)
 }
 
-func (crw *Crawler) loadFollowers(userId int, currentDepth int) {
-	if currentDepth == crw.depth {
+func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
+	if currentDepth > crw.depth {
 		return
 	}
 
-	v := url.Values{"user_id": userId}
-	for page := range crw.twitterApi.GetFollowersIdsAll(v) {
-		currentDepth++
+	v := url.Values{}
+	v.Add("user_id", strconv.FormatInt(userId, 10))
+	cursor, err := crw.twitterApi.GetFollowersIds(v)
 
+	if err != nil {
+		logrus.Error("Can't load followers for user_id", userId)
 	}
 
-	for _, user := range users {
-		crw.twitterApi.GetFollowersIdsAll(v)
-		logrus.Info(user.Name, " ", user.FollowersCount)
+	addToDataBase(userId, &cursor.Ids)
+
+	currentDepth++
+	for _, id := range cursor.Ids {
+		crw.loadFollowers(id, currentDepth)
 	}
+}
+
+func addToDataBase(userId int64, followers *[]int64) {
+	logrus.Info("User Id: ", userId, "\nFollowers Count: ", len(*followers), "\nFollowers: ", followers)
 }

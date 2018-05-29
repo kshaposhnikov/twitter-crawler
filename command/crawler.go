@@ -3,7 +3,7 @@ package command
 import (
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/kshaposhnikov/twitter-crawler/crawler"
-	"github.com/sirupsen/logrus"
+	//"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"time"
 )
@@ -25,17 +25,18 @@ func init() {
 	crawlerCmd.Flags().StringVarP(&accessTokenSecret, "access-token-secret", "", "", "Access Token Secret from your account on Twitter Deveoper portal")
 	crawlerCmd.Flags().StringVarP(&consumerKey, "consumer-key", "", "", "Consumer Key from your account on Twitter Deveoper portal")
 	crawlerCmd.Flags().StringVarP(&consumerSecret, "consumer_secret", "", "", "Consumer Secret from your account on Twitter Deveoper portal")
-	crawlerCmd.Flags().IntVarP(&depth, "depth", "d", 10, "Depth parameter to load")
+	crawlerCmd.Flags().IntVarP(&depth, "depth", "d", 1, "Depth parameter to load")
 }
 
 func startCrawler(cmd *cobra.Command, args []string) {
 	twitterApi := anaconda.NewTwitterApiWithCredentials(accessToken, accessTokenSecret, consumerKey, consumerSecret)
 	defer twitterApi.Close()
-	defer logrus.Info("Stop")
 
-	//twitterApi.SetDelay(5 * time.Second)
+	twitterApi.EnableThrottling(5*time.Second, 100)
+
+	if DB == nil {
+		openDBConnection()
+	}
 
 	crawler.New(twitterApi, depth).Start("ShaposhnikovKs")
-
-	time.Sleep(10 * time.Second)
 }
