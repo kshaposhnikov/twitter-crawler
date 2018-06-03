@@ -38,5 +38,5 @@ func startCrawler(cmd *cobra.Command, args []string) {
 		openDBConnection()
 	}
 
-	crawler.New(twitterApi, depth).Start("ShaposhnikovKs")
+	crawler.New(twitterApi, DB, depth).Start("ShaposhnikovKs")
 }

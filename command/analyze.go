@@ -24,7 +24,8 @@ func analyze(cmd *cobra.Command, args []string) {
 		openDBConnection()
 	}
 
-	graphIterator := graph.LoadGraphByIter(DB)
+	gateway := graph.NewGateway(DB)
+	graphIterator := gateway.LoadGraphByIter()
 	var context analyzer.AnalyzerContext
 	analyzer.CalcluatePowerByIter(graphIterator, &context)
 	context.SaveContext(contextDir)

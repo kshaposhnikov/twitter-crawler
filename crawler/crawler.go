@@ -5,17 +5,21 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/url"
 	"strconv"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
+	"gopkg.in/mgo.v2"
 )
 
 type Crawler struct {
+	gateway    *graph.Gateway
 	twitterApi *anaconda.TwitterApi
 	depth      int
 }
 
-func New(api *anaconda.TwitterApi, depthToLook int) *Crawler {
+func New(api *anaconda.TwitterApi, db *mgo.Database, depthToLook int) *Crawler {
 	return &Crawler{
 		twitterApi: api,
 		depth:      depthToLook,
+		gateway:    graph.NewGateway(db),
 	}
 }
 
@@ -41,7 +45,10 @@ func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
 		logrus.Error("Can't load followers for user_id", userId)
 	}
 
-	addToDataBase(userId, &cursor.Ids)
+	if !crw.gateway.Exists(userId) {
+		crw.addToDataBase(userId, &cursor.Ids)
+		return
+	}
 
 	currentDepth++
 	for _, id := range cursor.Ids {
@@ -49,6 +56,7 @@ func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
 	}
 }
 
-func addToDataBase(userId int64, followers *[]int64) {
+func (crw *Crawler) addToDataBase(userId int64, followers *[]int64) {
+	crw.gateway.StoreVertex()
 	logrus.Info("User Id: ", userId, "\nFollowers Count: ", len(*followers), "\nFollowers: ", followers)
 }

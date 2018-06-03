@@ -5,7 +5,6 @@ import (
 	"github.com/kshaposhnikov/twitter-crawler/graph"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/mgo.v2"
 )
 
 var loadCsvCmd = &cobra.Command{
@@ -25,20 +24,21 @@ func loadCsv(cmd *cobra.Command, args []string) {
 
 	logrus.Debug("[Load CSV Command] Input Parameters", args)
 
-	fillUsers(DB, args[0])
+	fillUsers(args[0])
 	users := user.FindAll(DB)
-	buildGraph(DB, users)
+	buildGraph(users)
 }
 
-func fillUsers(db *mgo.Database, path string) []user.User {
+func fillUsers(path string) []user.User {
 	users := user.ReadCSV(path)
-	user.StoreUser(db, users...)
+	user.StoreUser(DB, users...)
 	return users
 }
 
-func buildGraph(db *mgo.Database, users []user.User) {
+func buildGraph(users []user.User) {
+	gateway := graph.NewGateway(DB)
 	for _, user := range users {
-		graph.StoreVertex(db, graph.Node{
+		gateway.StoreVertex(graph.Node{
 			Id:                   user.ID,
 			AssociatedNodesCount: user.FriendsCount,
 			AssociatedNodes:      user.Friends,

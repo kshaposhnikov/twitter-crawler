@@ -67,9 +67,13 @@ func parseCSVLine(inputLine string) User {
 }
 
 func atoi(str string) int {
+	if str == "" {
+		return 0
+	}
+
 	res, err := strconv.Atoi(str)
 	if err != nil {
-		logrus.Fatalln("Cann't convert Str", str, "to int")
+		logrus.Fatalln("[csvuserparser.atoi] Cann't convert Str", str, "to int")
 	}
 	return res
 }
