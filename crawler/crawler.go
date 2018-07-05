@@ -57,6 +57,6 @@ func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
 }
 
 func (crw *Crawler) addToDataBase(userId int64, followers *[]int64) {
-	crw.gateway.StoreVertex()
+	crw.gateway.StoreVertex(graph.Node{Id: userId})
 	logrus.Info("User Id: ", userId, "\nFollowers Count: ", len(*followers), "\nFollowers: ", followers)
 }

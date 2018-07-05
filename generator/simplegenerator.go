@@ -25,7 +25,7 @@ func (gen GeneralGenerator) Generate() graph.Graph {
 	}
 
 	var previousGraph = gen.buildInitialGraph(n * m)
-	return gen.buildFinalGraph(previousGraph, 0, previousGraph.GetNodeCount(), m)
+	return gen.buildFinalGraph(previousGraph, 0, previousGraph.GetNodeCount(), int64(m))
 }
 
 func (gen GeneralGenerator) buildInitialGraph(n int) *graph.Graph {
@@ -33,7 +33,7 @@ func (gen GeneralGenerator) buildInitialGraph(n int) *graph.Graph {
 	previousGraph.AddNode(graph.Node{
 		Id:                   1,
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []int{1},
+		AssociatedNodes:      []int64{1},
 	})
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -60,26 +60,26 @@ func nextGraph(previousGraph *graph.Graph, degrees map[int]int, random *rand.Ran
 
 	degrees[len(probabilities)-1]++
 	return previousGraph.AddNode(graph.Node{
-		Id:                   len(probabilities),
+		Id:                   int64(len(probabilities)),
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []int{idx + 1},
+		AssociatedNodes:      []int64{int64(idx) + 1},
 	})
 }
 
-func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to, m int) graph.Graph {
+func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from, to int, m int64) graph.Graph {
 	result := graph.NewGraph()
 
-	left := from
-	j := left/m + 1
-	right := j*m - 1
-	loops := []int{}
-	l := 0
+	left := int64(from)
+	j := left / m + 1
+	var right = j * m - 1
+	loops := []int64{}
+	var l int64 = 0
 	for _, node := range pregeneratedGraph.Nodes[from:to] {
 		for _, associatedVertex := range node.AssociatedNodes {
 			if associatedVertex < right && associatedVertex > left {
 				loops = append(loops, j)
 			} else if associatedVertex >= right || associatedVertex <= left {
-				result = result.AddAssociatedNodeTo(j, calculateInterval(associatedVertex, m))
+				result = result.AddAssociatedNodeTo(j, int64(calculateInterval(int(associatedVertex), int(m))))
 			}
 		}
 
@@ -93,7 +93,7 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 					AssociatedNodes:      loops,
 				})
 			}
-			loops = []int{}
+			loops = []int64{}
 			left = right + 1
 			right += m
 			j++
@@ -117,7 +117,7 @@ const nodeRate = 10
 
 func mtCalculateProbabilities(degrees map[int]int) []float64 {
 	if len(degrees) > runtime.NumCPU()*nodeRate {
-		batch := calculateInterval(len(degrees), runtime.NumCPU())
+		batch := calculateInterval((len(degrees)), runtime.NumCPU())
 		goroutineNumber := calculateInterval(len(degrees), batch)
 		probabilityResults := make(chan probabilityResult, goroutineNumber)
 		var wg sync.WaitGroup

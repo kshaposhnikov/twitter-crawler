@@ -10,7 +10,7 @@ import (
 type User struct {
 	ID             int
 	ScreenNames    string
-	Tags           string
+	Tags           []string
 	Avatar         string
 	FollowersCount int
 	FriendsCount   int

@@ -22,6 +22,7 @@ func init() {
 func analyze(cmd *cobra.Command, args []string) {
 	if DB == nil {
 		openDBConnection()
+		defer closeConnection()
 	}
 
 	gateway := graph.NewGateway(DB)

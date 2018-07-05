@@ -38,5 +38,5 @@ func saveVertexPower(context *AnalyzerContext, path string) {
 }
 
 type AnalyzerContext struct {
-	vertexPower map[int]int
+	vertexPower map[int64]int
 }

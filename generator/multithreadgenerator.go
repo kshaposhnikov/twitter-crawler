@@ -21,10 +21,10 @@ func (gen FirstPhaseMultithreadGenerator) Generate() graph.Graph {
 
 	j := n
 	for i := n; i < intermidiateGraph.GetNodeCount(); i++ {
-		intermidiateGraph.Nodes[i].Id += j
+		intermidiateGraph.Nodes[i].Id += int64(j)
 
 		for l := 0; l < len(intermidiateGraph.Nodes[i].AssociatedNodes); l++ {
-			intermidiateGraph.Nodes[i].AssociatedNodes[l] += j
+			intermidiateGraph.Nodes[i].AssociatedNodes[l] += int64(j)
 		}
 
 		if i == j*2-1 {
@@ -44,5 +44,5 @@ func buildInitialGraph(n int, graphs chan *graph.Graph) {
 
 func buildFinalGraph(initialGraph *graph.Graph, m int) graph.Graph {
 	simpleGenerator := GeneralGenerator{}
-	return simpleGenerator.buildFinalGraph(initialGraph, 0, initialGraph.GetNodeCount(), m)
+	return simpleGenerator.buildFinalGraph(initialGraph, 0, initialGraph.GetNodeCount(), int64(m))
 }

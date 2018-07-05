@@ -7,7 +7,7 @@ import (
 )
 
 func CalcluatePowerByIter(iterator *mgo.Iter, context *AnalyzerContext) {
-	powerVertex := make(map[int]int)
+	powerVertex := make(map[int64]int)
 	var vertexTmp graph.Node
 	for iterator.Next(&vertexTmp) {
 		powerVertex[vertexTmp.Id] += vertexTmp.AssociatedNodesCount

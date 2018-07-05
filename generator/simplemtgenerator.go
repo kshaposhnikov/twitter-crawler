@@ -24,7 +24,7 @@ func (gen SecondPhaseMultithreadGenerator) Generate() graph.Graph {
 		}
 		go func() {
 			defer wg.Done()
-			graphs <- generator.buildFinalGraph(initialGraph, from, to, gen.ECount)
+			graphs <- generator.buildFinalGraph(initialGraph, from, to, int64(gen.ECount))
 		}()
 	}
 	wg.Wait()

@@ -37,43 +37,57 @@ func ReadCSV(path string) []User {
 func parseCSVLine(inputLine string) User {
 	columns := strings.Split(inputLine, ",")
 	log.Print("Parse info for user ", columns[0])
-	if strings.HasPrefix(columns[9], "[") {
-		columns[9] = strings.TrimPrefix(columns[9], "[")
-		columns[len(columns)-1] = strings.TrimSuffix(columns[len(columns)-1], "]")
-	}
 
+	var arrays []arrayInterval
+	var tmp arrayInterval
 	for i := 0; i < len(columns); i++ {
+		if strings.HasPrefix(columns[i], "[") {
+			columns[i] = strings.TrimPrefix(columns[i], "[")
+			tmp.start = i
+		}
+
+		if strings.HasSuffix(columns[i], "]") {
+			columns[i] = strings.TrimSuffix(columns[i], "]")
+			tmp.finish = i
+			arrays = append(arrays, tmp)
+		}
+
 		columns[i] = strings.Trim(strings.TrimSpace(columns[i]), "\"")
 	}
 
 	return User{
-		ID:             atoi(columns[0]),
+		ID:             atoi(columns[0], 0),
 		ScreenNames:    columns[1],
-		Tags:           columns[2],
-		Avatar:         columns[3],
-		FollowersCount: atoi(columns[4]),
-		FriendsCount:   atoi(columns[5]),
-		Lang:           columns[6],
-		LastSeen:       columns[7],
-		TweetID:        atoi(columns[8]),
+		Tags:           columns[arrays[0].start : arrays[0].finish],
+		Avatar:         columns[arrays[0].finish + 1],
+		FollowersCount: atoi(columns[arrays[0].finish + 2], 4),
+		FriendsCount:   atoi(columns[arrays[0].finish + 3], 5),
+		Lang:           columns[arrays[0].finish + 4],
+		LastSeen:       columns[arrays[0].finish + 5],
+		TweetID:        atoi(columns[arrays[0].finish + 6], 8),
 		Friends: func() []int {
-			result := make([]int, len(columns[9:]))
-			for _, item := range columns[9:] {
-				result = append(result, atoi(item))
+			var result []int
+			for _, item := range columns[arrays[1].start : ] {
+				result = append(result, atoi(item, 9))
 			}
 			return result
 		}(),
 	}
 }
 
-func atoi(str string) int {
+type arrayInterval struct {
+	start int
+	finish int
+}
+
+func atoi(str string, index int) int {
 	if str == "" {
 		return 0
 	}
 
 	res, err := strconv.Atoi(str)
 	if err != nil {
-		logrus.Fatalln("[csvuserparser.atoi] Cann't convert Str", str, "to int")
+		logrus.Fatalln("[csvuserparser.atoi] Cann't convert Str", str, "to int; Index: ", index)
 	}
 	return res
 }

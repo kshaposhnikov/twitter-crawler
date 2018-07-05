@@ -16,6 +16,7 @@ var loadCsvCmd = &cobra.Command{
 func loadCsv(cmd *cobra.Command, args []string) {
 	if DB == nil {
 		openDBConnection()
+		defer closeConnection()
 	}
 
 	if len(args) < 1 {

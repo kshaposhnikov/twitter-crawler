@@ -1,9 +1,9 @@
 package graph
 
 type Node struct {
-	Id                   int
+	Id                   int64
 	AssociatedNodesCount int
-	AssociatedNodes      []int
+	AssociatedNodes      []int64
 }
 
 type Graph struct {
@@ -28,7 +28,7 @@ func (graph *Graph) AddNode(node Node) *Graph {
 	return graph
 }
 
-func (graph *Graph) ContainsVertex(id int) bool {
+func (graph *Graph) ContainsVertex(id int64) bool {
 	for _, node := range graph.Nodes {
 		if node.Id == id {
 			return true
@@ -38,14 +38,14 @@ func (graph *Graph) ContainsVertex(id int) bool {
 	return false
 }
 
-func (graph *Graph) AddAssociatedNodesTo(id int, associatedNodes []int) *Graph {
+func (graph *Graph) AddAssociatedNodesTo(id int64, associatedNodes []int64) *Graph {
 	for _, associatedNode := range associatedNodes {
 		graph.AddAssociatedNodeTo(id, associatedNode)
 	}
 	return graph
 }
 
-func (graph *Graph) AddAssociatedNodeTo(id int, associatedNodeName int) *Graph {
+func (graph *Graph) AddAssociatedNodeTo(id int64, associatedNodeName int64) *Graph {
 	for i, node := range graph.Nodes {
 		if node.Id == id {
 			graph.Nodes[i].AssociatedNodesCount++
@@ -57,7 +57,7 @@ func (graph *Graph) AddAssociatedNodeTo(id int, associatedNodeName int) *Graph {
 	return graph.AddNode(Node{
 		Id:                   id,
 		AssociatedNodesCount: 1,
-		AssociatedNodes:      []int{associatedNodeName},
+		AssociatedNodes:      []int64{associatedNodeName},
 	})
 }
 

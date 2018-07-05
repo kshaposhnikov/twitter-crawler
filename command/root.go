@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-const skipDB = true
+const skipDB = false
 
 var DB *mgo.Database = nil
 
@@ -35,9 +35,12 @@ func openDBConnection() {
 	if err != nil {
 		logrus.Error("[Root Command] DB Connection", err)
 	} else {
-		defer session.Close()
 		DB = session.DB("twitter-crawler")
 	}
+}
+
+func closeConnection() {
+	DB.Session.Close()
 }
 
 func Execute() {
