@@ -19,8 +19,8 @@ func CalcluatePowerByIter(iterator *mgo.Iter, context *AnalyzerContext) {
 	iterator.Close()
 }
 
-func CalculateProwerByArray(graph *graph.Graph) map[int]int {
-	powerVertex := make(map[int]int)
+func CalculateProwerByArray(graph *graph.Graph) map[int64]int {
+	powerVertex := make(map[int64]int)
 	for _, item := range graph.Nodes {
 		powerVertex[item.Id] += item.AssociatedNodesCount
 		for _, vertex := range item.AssociatedNodes {

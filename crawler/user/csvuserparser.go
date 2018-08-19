@@ -56,19 +56,19 @@ func parseCSVLine(inputLine string) User {
 	}
 
 	return User{
-		ID:             atoi(columns[0], 0),
+		ID:             int64(atoi(columns[0], 0)),
 		ScreenNames:    columns[1],
-		Tags:           columns[arrays[0].start : arrays[0].finish],
-		Avatar:         columns[arrays[0].finish + 1],
-		FollowersCount: atoi(columns[arrays[0].finish + 2], 4),
-		FriendsCount:   atoi(columns[arrays[0].finish + 3], 5),
-		Lang:           columns[arrays[0].finish + 4],
-		LastSeen:       columns[arrays[0].finish + 5],
-		TweetID:        atoi(columns[arrays[0].finish + 6], 8),
-		Friends: func() []int {
-			var result []int
-			for _, item := range columns[arrays[1].start : ] {
-				result = append(result, atoi(item, 9))
+		Tags:           columns[arrays[0].start:arrays[0].finish],
+		Avatar:         columns[arrays[0].finish+1],
+		FollowersCount: atoi(columns[arrays[0].finish+2], 4),
+		FriendsCount:   atoi(columns[arrays[0].finish+3], 5),
+		Lang:           columns[arrays[0].finish+4],
+		LastSeen:       columns[arrays[0].finish+5],
+		TweetID:        atoi(columns[arrays[0].finish+6], 8),
+		Friends: func() []int64 {
+			var result []int64
+			for _, item := range columns[arrays[1].start:] {
+				result = append(result, int64(atoi(item, 9)))
 			}
 			return result
 		}(),
@@ -76,7 +76,7 @@ func parseCSVLine(inputLine string) User {
 }
 
 type arrayInterval struct {
-	start int
+	start  int
 	finish int
 }
 

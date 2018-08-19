@@ -70,8 +70,8 @@ func (gen GeneralGenerator) buildFinalGraph(pregeneratedGraph *graph.Graph, from
 	result := graph.NewGraph()
 
 	left := int64(from)
-	j := left / m + 1
-	var right = j * m - 1
+	j := left/m + 1
+	var right = j*m - 1
 	loops := []int64{}
 	var l int64 = 0
 	for _, node := range pregeneratedGraph.Nodes[from:to] {

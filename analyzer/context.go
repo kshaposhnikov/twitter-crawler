@@ -9,11 +9,11 @@ import (
 
 const vertexPowerFile string = "VertexPower.log"
 
-func (context *AnalyzerContext) GetVertexPower() map[int]int {
+func (context *AnalyzerContext) GetVertexPower() map[int64]int {
 	return context.vertexPower
 }
 
-func (context *AnalyzerContext) SetVertextPower(vertexPower map[int]int) {
+func (context *AnalyzerContext) SetVertextPower(vertexPower map[int64]int) {
 	context.vertexPower = vertexPower
 }
 
@@ -30,7 +30,7 @@ func saveVertexPower(context *AnalyzerContext, path string) {
 
 	log.Println("Saving power vertex results...")
 	for vertex, power := range context.vertexPower {
-		_, err = file.WriteString(strconv.Itoa(vertex) + ": " + strconv.Itoa(power) + "\n")
+		_, err = file.WriteString(strconv.FormatInt(vertex, 10) + ": " + strconv.Itoa(power) + "\n")
 		if err != nil {
 			log.Fatal("Error in the time of writing result to file")
 		}

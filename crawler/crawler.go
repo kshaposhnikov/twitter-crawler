@@ -2,11 +2,11 @@ package crawler
 
 import (
 	"github.com/ChimeraCoder/anaconda"
+	"github.com/kshaposhnikov/twitter-crawler/graph"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/mgo.v2"
 	"net/url"
 	"strconv"
-	"github.com/kshaposhnikov/twitter-crawler/graph"
-	"gopkg.in/mgo.v2"
 )
 
 type Crawler struct {
@@ -39,7 +39,7 @@ func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
 
 	v := url.Values{}
 	v.Add("user_id", strconv.FormatInt(userId, 10))
-	cursor, err := crw.twitterApi.GetFollowersIds(v)
+	cursor, err := crw.twitterApi.GetFriendsIds(v)
 
 	if err != nil {
 		logrus.Error("Can't load followers for user_id", userId)
@@ -48,6 +48,8 @@ func (crw *Crawler) loadFollowers(userId int64, currentDepth int) {
 	if !crw.gateway.Exists(userId) {
 		crw.addToDataBase(userId, &cursor.Ids)
 		return
+	} else {
+		logrus.Info("User Id: ", userId, " already exists")
 	}
 
 	currentDepth++
