@@ -34,9 +34,11 @@ func (self *Gateway) LoadGraphByIter() *mgo.Iter {
 }
 
 func (self *Gateway) Exists(userId int64) bool {
-	var result *Node = nil
-	self.db.C("graph").Find(bson.M{"id": userId}).One(result)
-	return result != nil
+	count, err := self.db.C("graph").Find(bson.M{"id": userId}).Count()
+	if err != nil {
+		log.Fatal("Error in the time of select for userId:", userId, err)
+	}
+	return count != 0
 }
 
 func (self *Gateway) StoreVertex(node ...Node) {

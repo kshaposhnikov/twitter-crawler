@@ -19,12 +19,16 @@ var accessTokenSecret string
 var consumerKey string
 var consumerSecret string
 var depth int
+var startFromUser string
+var startFromUserId int64
 
 func init() {
 	crawlerCmd.Flags().StringVarP(&accessToken, "access-token", "", "", "Access Token from your account on Twitter Deveoper portal")
 	crawlerCmd.Flags().StringVarP(&accessTokenSecret, "access-token-secret", "", "", "Access Token Secret from your account on Twitter Deveoper portal")
 	crawlerCmd.Flags().StringVarP(&consumerKey, "consumer-key", "", "", "Consumer Key from your account on Twitter Deveoper portal")
 	crawlerCmd.Flags().StringVarP(&consumerSecret, "consumer_secret", "", "", "Consumer Secret from your account on Twitter Deveoper portal")
+	crawlerCmd.Flags().StringVarP(&startFromUser, "start_from_user", "", "", "User name that will be used as starting point")
+	crawlerCmd.Flags().Int64VarP(&startFromUserId, "start_from_user_id", "", 0, "User Id that will be used as starting point")
 	crawlerCmd.Flags().IntVarP(&depth, "depth", "d", 1, "Depth parameter to load")
 }
 
@@ -32,12 +36,17 @@ func startCrawler(cmd *cobra.Command, args []string) {
 	twitterApi := anaconda.NewTwitterApiWithCredentials(accessToken, accessTokenSecret, consumerKey, consumerSecret)
 	defer twitterApi.Close()
 
-	twitterApi.EnableThrottling(5*time.Second, 100)
+	twitterApi.EnableThrottling(2*time.Second, 1)
 
 	if DB == nil {
 		openDBConnection()
 		defer closeConnection()
 	}
 
-	crawler.New(twitterApi, DB, depth).Start("ShaposhnikovKs")
+	crw := crawler.New(twitterApi, DB, depth)
+	if startFromUser != "" {
+		crw.StartByName(startFromUser)
+	} else {
+		crw.StartById(startFromUserId)
+	}
 }
