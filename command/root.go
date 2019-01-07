@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	initLogger()
-	rootCmd.AddCommand(loadCsvCmd, generateCmd, analyzeCmd, crawlerCmd)
+	rootCmd.AddCommand(loadCsvCmd, crawlerCmd)
 }
 
 func initLogger() {
